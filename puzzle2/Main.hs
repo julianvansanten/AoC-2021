@@ -63,15 +63,41 @@ getCoordinates (Down a:xs) (x,y) = getCoordinates xs (x, y + a)
 calculateFirstAnswer :: Coordinates -> Integer
 calculateFirstAnswer (x, y) = x * y
 
+-- Multiply the coordinates
 findLocation :: [String] -> Coordinates
 findLocation = (\x -> getCoordinates x (0,0)) . getDirections
+
+
+--Exercise 2
+-- Create a new type for the coordinates and the aim
+type Aim = (Coordinates, Integer)
+-- Show what each direction does
+getCoordinatesAim :: [Direction] -> Aim -> Aim
+getCoordinatesAim [] a = a
+getCoordinatesAim (Down b : bs) (c, a) = getCoordinatesAim bs (c, a + b)
+getCoordinatesAim (Up b : bs) (c, a) = getCoordinatesAim bs (c, a - b)
+getCoordinatesAim (Forward b : bs) ((x,y), a) = getCoordinatesAim bs ((x + b, y + mult), a)
+    where mult = a * b
+
+-- Calculate the multiplication of the two coordinates
+calculateSecondAnswer :: Aim -> Integer
+calculateSecondAnswer (c, _) = calculateFirstAnswer c
+
+-- Find the coordinates and the aim
+findAimLocation :: [String] -> Aim
+findAimLocation = (\x -> getCoordinatesAim x ((0,0), 0)) . getDirections
 
 main :: IO ()
 main = do
     fileName <- head <$> getArgs
     contents <- readFile fileName
-    let coordinates = findLocation $ lines contents
+    let allLines = lines contents
+    let coordinates = findLocation allLines
     putStrLn $ "The final coordinates are: " ++ show coordinates
-
     let totalMult = calculateFirstAnswer coordinates
     putStrLn $ "Multiplying them results in: " ++ show totalMult
+
+    let aim = findAimLocation allLines
+    putStrLn $ "The second coordinates and aim are: " ++ show aim
+    let totalAim = calculateSecondAnswer aim
+    putStrLn $ "Multiplying the coordinates results in: " ++ show totalAim
