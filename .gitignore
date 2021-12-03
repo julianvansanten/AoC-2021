@@ -1,6 +1,9 @@
 # Do not include data
 *.txt
-
+# Do not include code workspace
+workspace.code-workspace
+# Do not include compiled Main classes
+Main
 
 dist
 dist-*
