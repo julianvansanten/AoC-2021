@@ -41,3 +41,6 @@ parseCard = Card <$> parseRow `sepEndBy1` newline
 parseFile :: Parser BingoGame
 parseFile = BingoGame <$> parseDraws <* spaces <*> (parseCard `sepBy1` many newline)
 
+-- Parse a String to a parsed BingoGame
+getGame :: String -> Either ParseError BingoGame
+getGame = parse parseFile ""
