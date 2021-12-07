@@ -1,7 +1,7 @@
 # Do not include data
 *.txt
 
-
+*.env
 dist
 dist-*
 cabal-dev
@@ -25,3 +25,5 @@ cabal.project.local
 cabal.project.local~
 .HTF/
 .ghc.environment.*
+
+workspace.code-workspace
