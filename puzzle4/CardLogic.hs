@@ -81,30 +81,39 @@ type Result = Either BingoGame ([Card], Integer)
 findWinningCards :: BingoGame -> Result
 findWinningCards b = processDrawsForWin (Left b)
 
--- Run through Cards.
+-- Run through Cards to find the first winning card.
 processDrawsForWin :: Result -> Result
+-- If a completed Result is entered, no need to continue.
 processDrawsForWin (Right a) = Right a
+-- If a BingoGame is not completed yet, process the next draw.
+--  If a winning card is found after this draw, the result is found.
+--  If this is not the case, continue on the next draw.
 processDrawsForWin (Left (BingoGame (Draws (d:ds)) cs)) =
     if null bingos
-        then Left (BingoGame (Draws ds) processedCards)
+        then processDrawsForWin $ Left (BingoGame (Draws ds) processedCards)
         else Right (bingos, d)
     where
         processedCards = map (`markCard` d) cs
         bingos = getBingos processedCards
-processDrawsForWin (Left (BingoGame (Draws []) _)) = error "no more draws!"
+-- if a BingoGame is out of draws, no winning card exists.
+processDrawsForWin (Left (BingoGame (Draws []) _)) = error "No more draws!"
 
 
 --Exercise 2
+-- Run through Cards to find the last winning card.
 findLosingCards :: BingoGame -> Result
 findLosingCards b = processDrawsForLose (Left b)
 
+-- On each run, filter out winning cards until the next filter
+-- results in an empty list of ongoing cards.
 processDrawsForLose :: Result -> Result
 processDrawsForLose (Right a) = Right a
 processDrawsForLose (Left (BingoGame (Draws (d:ds)) cs)) =
     if null remains
-        then Right (cs, d)
+        then Right (processedCards, d)
         else processDrawsForLose $ Left (BingoGame (Draws ds) remains)
     where
         processedCards = map (`markCard` d) cs
         remains = filter (not . cardHasBingo) processedCards
-processDrawsForLose (Left (BingoGame (Draws []) _)) = error "no more draws!"
+processDrawsForLose (Left (BingoGame (Draws [d]) cs)) = Right (cs, d)
+processDrawsForLose (Left (BingoGame (Draws []) _)) = error "No more draws!"
