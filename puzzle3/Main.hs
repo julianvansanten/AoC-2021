@@ -1,6 +1,7 @@
 module Main where
 import System.Environment (getArgs)
 import Data.Bits
+import Data.Char
 
 -- Create a tuple of (zeros, ones) counting the occurrences in a given string
 -- String must not contain any other characters than 0 or 1, function only checks
@@ -41,30 +42,35 @@ transpose x = map head x : transpose (map tail x)
 
 
 -- Exercise 2
--- Convert a string of bits to an integer. String should only contain zeros and ones,
--- as all characters that are not zero are counted as ones.
-bitStringToInteger :: String -> Integer
-bitStringToInteger [] = 0
-bitStringToInteger (c:cs)   | c == '0' = bitStringToInteger cs
-                            | otherwise = 2 ^ length cs + bitStringToInteger cs
+-- Filter a string of bits by applying a given function over each result
+filterRecursiveBits :: ([String] -> [Integer]) -> [String] -> Int -> String
+filterRecursiveBits f strs i = result
+    where   msb = f (transpose strs)!!i
+            filt = filterBit strs i msb
+            result = if length filt <= 1 then head filt else filterRecursiveBits f filt (i + 1)
 
--- Convert an entire array of strings to an array of integers.
-bitArrayToInteger :: [String] -> [Integer]
-bitArrayToInteger = map bitStringToInteger
+-- Filter a given bit from a given array of strings containing zeros and ones.
+filterBit :: [String] -> Int -> Integer -> [String]
+filterBit strs i b = filter (\s -> s!!i == bit) strs
+    where bit = chr $ fromIntegral b + 48
 
--- Keep filtering numbers out of a list until either all numbers are
--- the same or the next bit filter results in an empty list.
-bitwiseFilter :: [String] -> [String]
-bitwiseFilter [] = []
-bitwiseFilter xs = undefined
+-- Find the oxygen rating for a given array of bits.
+findOxygenRating :: [String] -> Integer
+findOxygenRating strs = bitConversion $ filterRecursiveBits getMSBits strs 0
 
+-- Find the CO2 rating for a given array of bits.
+findCO2Scrubbing :: [String] -> Integer
+findCO2Scrubbing strs = bitConversion $ filterRecursiveBits getLSBits strs 0
 
--- Filter an array with a bitwise or, where all bits should be zero.
-falseFilter :: Integer -> [String] -> [String]
-falseFilter n = filter (\ x -> let c = read x - 48 in (.&.) n c == 0)
--- Filter an array with a bitwise and, where all bits should be one.
-trueFilter :: Integer -> [String] -> [String]
-trueFilter n = filter (\ x -> let c = read x - 48 in (.&.) n c /= 0)
+-- Convert a string of bits to an Integer
+bitConversion :: String -> Integer
+bitConversion str = getNumber $ map (\c -> toInteger (ord c - 48)) str
+
+-- Compute the answer to the second puzzle by calculating the oxygen rating, the CO2 rating and multiplying the results.
+getSecondAnswer :: [String] -> Integer
+getSecondAnswer strs = oxy * co2
+    where   oxy = findOxygenRating strs
+            co2 = findCO2Scrubbing strs
 
 
 main :: IO ()
@@ -79,10 +85,5 @@ main = do
     putStrLn $ "The epsilon rate is: " ++ show lsb
     putStrLn $ "The answer to the first puzzle is: " ++ show (msb * lsb)
 
-    -- let nums = bitArrayToInteger allLines
-    -- print $ getMSBits trans
-    -- print nums
-    -- let oxygen = bitwiseFilter nums (getMSBits trans)
-    -- putStrLn $ "The numbers remaining for the oxygen filter are: " ++ show oxygen
-    -- let co2 = bitwiseFilter nums (getLSBits trans)
-    -- putStrLn $ "The numbers remaining for the CO2 levels are: " ++ show co2
+    let second = getSecondAnswer allLines
+    putStrLn $ "The answer to the second puzzle is: " ++ show second
