@@ -2,6 +2,11 @@
 *.txt
 
 *.env
+# Do not include code workspace
+workspace.code-workspace
+# Do not include compiled Main classes
+Main
+
 dist
 dist-*
 cabal-dev
